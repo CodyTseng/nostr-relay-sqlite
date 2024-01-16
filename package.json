@@ -1,0 +1,35 @@
+{
+  "name": "nostr-relay-sqlite",
+  "version": "0.0.1",
+  "description": "This is a simple Nostr Relay server powered by nostr-relay",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "ts-node src/main.ts $@",
+    "start": "node dist/main.js $@"
+  },
+  "author": "codytseng",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodyTseng/nostr-relay-sqlite"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.4",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@nostr-relay/core": "^0.0.9",
+    "@nostr-relay/event-repository-sqlite": "^0.0.9",
+    "@nostr-relay/validator": "^0.0.9",
+    "commander": "^11.1.0",
+    "kleur": "^4.1.5",
+    "ws": "^8.16.0"
+  }
+}
