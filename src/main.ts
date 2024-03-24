@@ -25,12 +25,15 @@ ${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' 
 `);
 
   wss.on('connection', (ws) => {
+    // Handle a new client connection. This method should be called when a new client connects to the Nostr Relay server.
     relay.handleConnection(ws);
 
     ws.on('message', async (data) => {
       try {
+        // Validate the incoming message.
         const message = await validator.validateIncomingMessage(data);
-        relay.handleMessage(ws, message);
+        // Handle the incoming message.
+        await relay.handleMessage(ws, message);
       } catch (error) {
         if (error instanceof Error) {
           ws.send(JSON.stringify(createOutgoingNoticeMessage(error.message)));
@@ -38,10 +41,10 @@ ${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' 
       }
     });
 
+    // Handle a client disconnection. This method should be called when a client disconnects from the Nostr Relay server.
     ws.on('close', () => relay.handleDisconnect(ws));
 
     ws.on('error', (error) => {
-      log(error);
       ws.send(JSON.stringify(createOutgoingNoticeMessage(error.message)));
     });
   });
