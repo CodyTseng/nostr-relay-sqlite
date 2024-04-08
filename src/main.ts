@@ -5,8 +5,7 @@ import { program } from 'commander';
 import { bold, underline, yellow } from 'kleur/colors';
 import { WebSocketServer } from 'ws';
 import { getLocalIpAddress } from './ip.util';
-
-const log = console.log;
+import { RequestLogger } from './request-logger';
 
 async function bootstrap(options: { port?: number; file?: string } = {}) {
   const { port = 4869, file = ':memory:' } = options;
@@ -17,8 +16,10 @@ async function bootstrap(options: { port?: number; file?: string } = {}) {
   const relay = new NostrRelay(eventRepository);
   const validator = new Validator();
 
+  relay.register(new RequestLogger());
+
   const localIpAddress = getLocalIpAddress();
-  log(`Now you can use your ${bold('Nostr App')} to connect to this relay.
+  console.log(`Now you can use your ${bold('Nostr App')} to connect to this relay.
 
 ${yellow('Local:')}           ${yellow(underline('ws://localhost:' + port))}
 ${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' + port))}
