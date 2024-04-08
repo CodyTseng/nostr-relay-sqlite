@@ -3,12 +3,20 @@ import { EventRepositorySqlite } from '@nostr-relay/event-repository-sqlite';
 import { Validator } from '@nostr-relay/validator';
 import { program } from 'commander';
 import { bold, underline, yellow } from 'kleur/colors';
+import path from 'path';
 import { WebSocketServer } from 'ws';
-import { getLocalIpAddress } from './ip.util';
 import { RequestLogger } from './request-logger';
+import { ensureDirSync, getLocalIpAddress } from './utils';
+
+const DEFAULT_DB_DIR = path.join(__dirname, '../db');
+const DEFAULT_DB_FILE = path.join(DEFAULT_DB_DIR, 'nostr.db');
 
 async function bootstrap(options: { port?: number; file?: string } = {}) {
-  const { port = 4869, file = ':memory:' } = options;
+  const { port = 4869, file = DEFAULT_DB_FILE } = options;
+
+  if (file === DEFAULT_DB_FILE) {
+    ensureDirSync(DEFAULT_DB_DIR);
+  }
 
   const wss = new WebSocketServer({ port });
 
@@ -16,14 +24,8 @@ async function bootstrap(options: { port?: number; file?: string } = {}) {
   const relay = new NostrRelay(eventRepository);
   const validator = new Validator();
 
-  relay.register(new RequestLogger());
-
-  const localIpAddress = getLocalIpAddress();
-  console.log(`Now you can use your ${bold('Nostr App')} to connect to this relay.
-
-${yellow('Local:')}           ${yellow(underline('ws://localhost:' + port))}
-${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' + port))}
-`);
+  const logsDir = path.join(__dirname, '../logs');
+  relay.register(new RequestLogger(logsDir));
 
   wss.on('connection', (ws) => {
     // Handle a new client connection. This method should be called when a new client connects to the Nostr Relay server.
@@ -49,6 +51,17 @@ ${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' 
       ws.send(JSON.stringify(createOutgoingNoticeMessage(error.message)));
     });
   });
+
+  const localIpAddress = getLocalIpAddress();
+  console.log(`
+db file:  ${file}
+logs dir: ${logsDir}
+
+Now you can use your ${bold('Nostr App')} to connect to this relay.
+
+${yellow('Local:')}           ${yellow(underline('ws://localhost:' + port))}
+${yellow('On Your Network:')} ${yellow(underline('ws://' + localIpAddress + ':' + port))}
+`);
 }
 
 program

@@ -4,26 +4,19 @@ import type {
   HandleMessageResult,
   IncomingMessage,
 } from '@nostr-relay/common';
-import { mkdirSync, statSync } from 'fs';
 import path from 'path';
 import Pino from 'pino';
+import { ensureDirSync } from './utils';
 
 export class RequestLogger implements HandleMessagePlugin {
   private readonly logger: Pino.Logger;
 
-  constructor() {
-    const dir = path.join(__dirname, '../logs');
-    const dirStat = this.statSync(dir);
-    if (!dirStat) {
-      mkdirSync(dir, { recursive: true });
-    } else if (!dirStat.isDirectory()) {
-      throw new Error(`Log directory '${dir}' is not a directory`);
-    }
-
+  constructor(dirPath: string) {
+    ensureDirSync(dirPath);
     this.logger = Pino({
       transport: {
         target: 'pino/file',
-        options: { destination: path.join(dir, 'requests.log') },
+        options: { destination: path.join(dirPath, 'requests.log') },
       },
     });
   }
@@ -40,13 +33,5 @@ export class RequestLogger implements HandleMessagePlugin {
       `${messageType} request processed in ${Date.now() - start}ms`,
     );
     return result;
-  }
-
-  private statSync(dirPath: string) {
-    try {
-      return statSync(dirPath);
-    } catch {
-      return false;
-    }
   }
 }

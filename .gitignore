@@ -7,3 +7,6 @@
 
 # logs
 /logs
+
+# sqlite db file
+/db
